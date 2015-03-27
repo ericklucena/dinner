@@ -2,7 +2,7 @@
 * @Author: Erick Lucena Palmeira Silva
 * @Date:   2015-03-21 15:46:22
 * @Last Modified by:   Erick Lucena Palmeira Silva
-* @Last Modified time: 2015-03-25 16:44:05
+* @Last Modified time: 2015-03-27 02:25:18
 */
 
 #include "philosopher.h"
@@ -79,18 +79,26 @@ void think (int id)
 
 void eat(int id)
 {
-    int leftForkId;
-    int rightForkId;
+    int firstForkId;
+    int secondForkId;
     bool ate = false;
     srand(time(NULL));
 
-    leftForkId  = (id==0)?nPhilosophers-1:id-1;
-    rightForkId = id;
+    if(id==0)
+    {
+        firstForkId = id;   
+        secondForkId  = nPhilosophers-1;
+    }
+    else
+    {
+        firstForkId  = id-1;
+        secondForkId = id;
+    }
 
     while (!ate)
     {
-        while( pthread_mutex_trylock(&forks[leftForkId]) != 0);
-        if ( pthread_mutex_trylock(&forks[rightForkId]) == 0)
+        while( pthread_mutex_trylock(&forks[firstForkId]) != 0);
+        if ( pthread_mutex_trylock(&forks[secondForkId]) == 0)
         {
             ate = true;
             plates[id]--;
@@ -99,11 +107,10 @@ void eat(int id)
         }
         else
         {
-            pthread_mutex_unlock(&forks[leftForkId]);
+            pthread_mutex_unlock(&forks[firstForkId]);
         }
     }
 
-    pthread_mutex_unlock(&forks[rightForkId]);
-    pthread_mutex_unlock(&forks[leftForkId]);
-
+    pthread_mutex_unlock(&forks[secondForkId]);
+    pthread_mutex_unlock(&forks[firstForkId]);
 }
